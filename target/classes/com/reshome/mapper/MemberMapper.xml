@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.reshome.mapper.MemberMapper">
+
+	<!-- 아이디 중복확인 -->
+	<select id="checkIdOverlap" resultType="int">
+		select count(*)
+		from mbme_tab
+		where mbme_id = #{mbme_id}	
+	</select>
+	
+	<!-- 회원가입 -->
+	<insert id="join">
+		insert into mbme_tab(mbme_id, mbme_name, mbme_pw, mbme_email, mbme_zipcode,
+            mbme_add, mbme_add2, mbme_phone, mbme_nick, mbme_eventre)
+        values(#{mbme_id}, #{mbme_name}, #{mbme_pw}, #{mbme_email}, #{mbme_zipcode},
+            #{mbme_add}, #{mbme_add2}, #{mbme_phone}, #{mbme_nick}, #{mbme_eventre})
+	</insert>
+	
+	
+	<!-- 로그인 확인 -->
+	<select id="login_ok" resultType="com.reshome.domain.MemberVO">
+		select * from mbme_tab where mbme_id = #{mbme_id}
+	</select>
+	
+	<select id="member_info" resultType="com.reshome.domain.MemberVO">
+		select * from mbme_tab where mbme_id = #{mbme_id}
+	</select>
+	
+	<update id="modifyPOST">
+		update mbme_tab
+		
+		    set MBME_NAME = #{mbme_name}
+		    ,	MBME_EMAIL = #{mbme_email}
+		    ,   MBME_ZIPCODE = #{mbme_zipcode}
+		    ,   MBME_ADD = #{mbme_add}
+		    ,   MBME_ADD2 = #{mbme_add2}
+		    ,   MBME_PHONE = #{mbme_phone}
+		    ,   MBME_NICK = #{mbme_nick}
+		    ,   MBME_EVENTRE = #{mbme_eventre}
+		    ,   MBME_DATE_RT = sysdate
+		where mbme_id = #{mbme_id}
+	</update>
+	
+	<select id="find_id" resultType="string">
+		select mbme_id from mbme_tab where mbme_name = #{mbme_name}
+	</select>
+	
+	<select id="find_pwd" resultType="com.reshome.domain.MemberVO">
+		select * from mbme_tab where mbme_id = #{mbme_id} and mbme_name = #{mbme_name}
+	</select>
+	
+	<delete id="deleteMb">
+		delete from mbme_tab where mbme_id = #{mbme_id}
+	</delete>
+	
+	<!-- VO클래스 필드와 테이블컬럼명이 다른 경우 -->
+	<!-- 예시) UserInfoVO 와 MemberVO -->
+	<resultMap type="com.reshome.domain.UserInfoVO" id="userinfo">
+			
+		<id property="user_id" column="mbme_id" />
+		<result property="user_id" column="mbme_id" />
+		<result property="user_name" column="mbme_name" />
+		<result property="user_pw" column="mbme_pw" />
+		<result property="user_email" column="mbme_email" />
+		<result property="user_zipcode" column="mbme_zipcode" />
+		<result property="user_add" column="mbme_add" />
+		<result property="user_add2" column="mbme_add2" />
+		<result property="user_phone" column="mbme_phone" />
+		<result property="user_nick" column="mbme_nick" />
+		<result property="user_eventre" column="mbme_eventre" />
+		<result property="user_point" column="mbme_point" />
+		<result property="user_date_reg" column="mbme_date_reg" />
+		<result property="user_date_rt" column="mbme_date_rt" />
+		<result property="user_date_last" column="mbme_date_last" />
+		
+	</resultMap>
+	
+	<!-- 일치가 안되서 resultType="com.reshome.domain.UserInfoVO" 를 못쓸 때 -->
+	<!-- resultMap을 쓰는 것 위의 id를 가져왔다. -->
+	<select id="userinfo_list" resultMap="userinfo">
+		select
+			mbme_id, mbme_name, mbme_pw, mbme_email, mbme_zipcode, mbme_add, mbme_add2, mbme_phone,
+			mbme_nick, mbme_eventre, mbme_point, mbme_date_reg, mbme_date_rt, mbme_date_last
+		from mbme_tab
+	</select>
+
+</mapper>

@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.reshome.mapper.AdProductMapper">
+
+	<select id="getCategoryList" resultType="com.reshome.domain.CategoryVO">
+		select cg_code, cg_code_up, cg_name from category_tab
+		where cg_code_up is null
+	</select>
+	
+	<select id="getSubCategoryList" resultType="com.reshome.domain.CategoryVO">
+		select cg_code, cg_code_up, cg_name from category_tab
+		where cg_code_up = #{cg_code}
+	</select>
+	
+	<insert id="product_insert">
+		insert into goods_tab(gds_num_pk, cg_code_up, cg_code, gds_name, gds_price, gds_discount, gds_company, gds_detail, gds_img, gds_amount, gds_buy)
+values(seq_gds_num_pk.nextval, #{cg_code_up}, #{cg_code}, #{gds_name}, #{gds_price}, #{gds_discount}, #{gds_company}, #{gds_detail}, #{gds_img}, #{gds_amount}, #{gds_buy})
+	</insert>
+	
+	<update id="product_modifyOK">
+		update goods_tab
+			set cg_code_up = #{cg_code_up},
+				cg_code = #{cg_code},
+				gds_name = #{gds_name},
+				gds_price = #{gds_price},
+				gds_company = #{gds_company},
+				gds_detail = #{gds_detail},
+				gds_img = #{gds_img},
+				gds_amount = #{gds_amount},
+				gds_buy = #{gds_buy},
+				gds_date_rt = sysdate
+				
+		where gds_num_pk = #{gds_num_pk}
+	</update>
+	
+	<sql id="criteria">
+		<trim prefix="(" suffix=") and" prefixOverrides="OR">
+			<foreach item="type" collection="typeArr">
+				<trim prefix="OR">
+					<choose>
+						<when test="type == 'N'.toString()">
+							gds_name like '%' || #{keyword} || '%'
+						</when>
+						<when test="type == 'D'.toString()">
+							gds_detail like '%' || #{keyword} || '%'
+						</when>
+						<when test="type == 'C'.toString()">
+							gds_company like '%' || #{keyword} || '%'
+						</when>
+					</choose>
+				</trim>
+			</foreach>
+		</trim>
+	</sql>
+	
+	<!-- 집 인덱스 C007888 -->
+	<select id="product_list" resultType="com.reshome.domain.ProductVO">
+		<![CDATA[
+		select gds_num_pk, cg_code, cg_code_up, gds_name, gds_price, gds_discount, gds_company,
+		    gds_detail, gds_img, gds_amount, gds_buy, gds_date_reg, gds_date_rt
+		from
+		    (select /*+ index_desc(goods_tab SYS_C007901 ) */ rownum rn, gds_num_pk, cg_code, cg_code_up, gds_name, gds_price, gds_discount, gds_company,
+		        gds_detail, gds_img, gds_amount, gds_buy, gds_date_reg, gds_date_rt
+		    from goods_tab where gds_num_pk > 0 and 
+		]]>
+		
+			<include refid="criteria"></include>
+		
+		<![CDATA[
+			rownum > 0 and rownum <= #{pageNum} * #{amount})
+			
+		where rn  > (#{pageNum}-1) * #{amount}
+		]]>
+	</select>
+	
+	<select id="getTotalCountProduct" resultType="int">
+		select count(*) from goods_tab where
+		
+			<include refid="criteria"></include>
+		
+		<![CDATA[
+		gds_num_pk > 0
+		]]>
+	</select>
+	
+	<select id="product_modify" resultType="com.reshome.domain.ProductVO">
+		select * from goods_tab where gds_num_pk = #{gds_num_pk}
+	</select>
+	
+	<delete id="product_deleteOk">
+		delete from goods_tab where gds_num_pk = #{gds_num_pk}
+	</delete>
+
+</mapper>

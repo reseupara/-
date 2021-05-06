@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.reshome.mapper.UserProductMapper">
+
+	<select id="getCategoryList" resultType="com.reshome.domain.CategoryVO">
+		select cg_code, cg_code_up, cg_name from category_tab
+		where cg_code_up is null
+	</select>
+	
+	<select id="getSubCategoryList" resultType="com.reshome.domain.CategoryVO">
+		select cg_code, cg_code_up, cg_name from category_tab
+		where cg_code_up = #{cg_code}
+	</select>
+	
+	<select id="getProductListBysubCate" resultType="com.reshome.domain.ProductVO">
+	
+		<![CDATA[
+		select gds_num_pk, cg_code, cg_code_up, gds_name, gds_price, gds_discount, gds_company,
+		    gds_detail, gds_img, gds_amount, gds_buy, gds_date_reg, gds_date_rt
+		from
+		    (select /*+ index_desc(goods_tab SYS_C007079 ) */ rownum rn, gds_num_pk, cg_code, cg_code_up, gds_name, gds_price, gds_discount, gds_company,
+		        gds_detail, gds_img, gds_amount, gds_buy, gds_date_reg, gds_date_rt
+		    from goods_tab where gds_num_pk > 0 and cg_code = #{cg_code} and
+
+			rownum > 0 and rownum <= #{cri.pageNum} * #{cri.amount})
+			
+		where rn  > (#{cri.pageNum}-1) * #{cri.amount}
+		]]>
+	</select>
+	
+	<select id="getProductListNew" resultType="com.reshome.domain.ProductVO">
+		<![CDATA[
+		select gds_num_pk, cg_code, cg_code_up, gds_name, gds_price, gds_discount, gds_company,
+		    gds_detail, gds_img, gds_amount, gds_buy, gds_date_reg, gds_date_rt
+		    from 
+		    (
+		    select gds_num_pk, cg_code, cg_code_up, gds_name, gds_price, gds_discount, gds_company,
+		    gds_detail, gds_img, gds_amount, gds_buy, gds_date_reg, gds_date_rt
+		    from goods_tab order by gds_date_reg desc
+		    ) where Rownum < 9
+		    ]]>
+	</select>
+	
+	<select id="getTotalCountProductBySubCate" resultType="int">
+	
+		select count(*) from goods_tab where gds_num_pk > 0 and cg_code = #{cg_code}
+	
+	</select>
+	
+	<select id="getProductByNum" resultType="com.reshome.domain.ProductVO">
+		
+		select * from goods_tab where gds_num_pk = #{gds_num_pk}
+	
+	</select>
+	
+
+</mapper>
